@@ -15,9 +15,10 @@ import 'amigos.dart';
 import 'api_constants.dart';
 import 'peticiones.dart';
 import 'register_page.dart';
-import 'auth_service.dart'; // Asegúrate de importar HotWheelsService aquí
+import 'auth_service.dart';
 import 'collection.dart';
 import 'wishlist.dart';
+import 'codigo_page.dart';
 
 void main() async {
   // Asegura que la inicialización de WidgetsFlutterBinding esté completa.
@@ -62,6 +63,7 @@ class MyApp extends StatelessWidget {
           '/register': (context) => RegisterPage(),
           '/collection': (context) => CollectionPage(),
           '/wishlist': (context) => WishlistPage(),
+          '/codigo': (context) => CodigoPage(),
         },
       ),
     );
@@ -127,6 +129,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  @override
   void dispose() {
     // Limpiar el controlador cuando el widget se elimine del árbol de widgets
     _establecimientoController.dispose();
@@ -361,6 +364,15 @@ class _MyHomePageState extends State<MyHomePage> {
               );
             },
           ),
+          IconButton(
+                icon: Icon(Icons.share),
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => CodigoPage()),
+                  );
+                },
+              ),
         ],
       ),
       body: Padding(
@@ -431,12 +443,12 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.receipt),
-            label: 'Colección', // Cambia el texto según prefieras
+            label: 'Colección',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.favorite),
             label: 'Wishlist',
-          ),
+          )
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
@@ -445,7 +457,16 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _onItemTapped(int index) {
-    if (index == 1) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    if (index == 0) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => MyHomePage()),
+      );
+    } else if (index == 1) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => CollectionPage()),
@@ -456,9 +477,5 @@ class _MyHomePageState extends State<MyHomePage> {
         MaterialPageRoute(builder: (context) => WishlistPage()),
       );
     }
-    // Si el índice es 0 (Inicio), simplemente actualiza el estado del índice seleccionado
-    setState(() {
-      _selectedIndex = index;
-    });
   }
 }

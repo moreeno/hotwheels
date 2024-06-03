@@ -31,8 +31,9 @@ class _PeticionesPageState extends State<PeticionesPage> {
         List<Map<String, dynamic>> requests =
             List<Map<String, dynamic>>.from(data['usuarios'].map((user) => {
                   'id': user['id'],
-                  'nombre': user['nombre'],
+                  'usuario': user['usuario'],
                   'isValidated': user['is_validated'] ?? false,
+                  'codigo': user['codigo'] ?? false,
                 }));
         return requests;
       } else {
@@ -44,10 +45,13 @@ class _PeticionesPageState extends State<PeticionesPage> {
   }
 
   Future<void> _acceptRequest(int friendCode) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String email = prefs.getString('email') ?? 'No Email Found';
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String email = prefs.getString('email') ?? 'No Email Found';
+  print(friendCode);
+  try {
     final response = await http.post(
       Uri.parse('${APIConstants.apiBaseUrl}${APIConstants.acceptRequest}'),
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       body: {'email': email, 'friend_code': friendCode.toString()},
     );
     if (response.statusCode == 200) {
@@ -60,7 +64,11 @@ class _PeticionesPageState extends State<PeticionesPage> {
     } else {
       throw Exception('Error: No se pudo conectar al servidor');
     }
+  } catch (e) {
+    print(e);
+    throw Exception('Error: ${e.toString()}');
   }
+}
 
   Future<void> _rejectRequest(int friendCode) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -117,7 +125,7 @@ class _PeticionesPageState extends State<PeticionesPage> {
                 itemBuilder: (context, index) {
                   Map<String, dynamic> request = snapshot.data![index];
                   return ListTile(
-                    title: Text(request['nombre']),
+                    title: Text(request['usuario']),
                     subtitle: request['isValidated']
                         ? Text('Solicitud ya validada')
                         : null,
@@ -129,7 +137,7 @@ class _PeticionesPageState extends State<PeticionesPage> {
                           onPressed: request['isValidated']
                               ? null
                               : () async {
-                                  await _acceptRequest(request['id']);
+                                  await _acceptRequest(request['codigo']);
                                   setState(() {
                                     _userRequestsFuture = _getUserRequests();
                                   });
@@ -140,7 +148,7 @@ class _PeticionesPageState extends State<PeticionesPage> {
                           onPressed: request['isValidated']
                               ? null
                               : () async {
-                                  await _rejectRequest(request['id']);
+                                  await _rejectRequest(request['codigo']);
                                   setState(() {
                                     _userRequestsFuture = _getUserRequests();
                                   });

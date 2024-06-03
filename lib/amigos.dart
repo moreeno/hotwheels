@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 import 'api_constants.dart';
+import 'auth_service.dart';
+import 'collection_friend.dart';
 import 'main.dart';
 
 class AmigosPage extends StatefulWidget {
@@ -18,30 +20,25 @@ class _AmigosPageState extends State<AmigosPage> {
   @override
   void initState() {
     super.initState();
-    _getUserEmail().then((email) {
-      setState(() {
-        userEmail = email;
-      });
       _friendsFuture = _getFriends();
-    });
-  }
-
-  Future<String?> _getUserEmail() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString('email');
+    
   }
 
   Future<List<Map<String, dynamic>>> _getFriends() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String email = prefs.getString('email') ?? 'No Email Found';
     final response = await http.get(
       Uri.parse(
-          '${APIConstants.apiBaseUrl}${APIConstants.getUserRequests}?email=$userEmail'),
+          '${APIConstants.apiBaseUrl}${APIConstants.getUserFriendsEndpoint}$email'),
     );
     if (response.statusCode == 200) {
       final data = json.decode(utf8.decode(response.bodyBytes));
       if (data['success']) {
-        // Filtrar amigos que están validados
         return List<Map<String, dynamic>>.from(
-          data['usuarios'].where((user) => user['is_validated'] == true),
+          data['friends'].map((friend) => {
+            'usuario': friend['usuario'],
+            'email': friend['email'],
+          }),
         );
       } else {
         throw Exception(data['message']);
@@ -49,6 +46,13 @@ class _AmigosPageState extends State<AmigosPage> {
     } else {
       throw Exception('Error: No se pudo conectar al servidor');
     }
+  }
+
+  void _showFriendCollection(String friendEmail) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => CollectionFriendPage(friendEmail: friendEmail)),
+    );
   }
 
   @override
@@ -77,7 +81,7 @@ class _AmigosPageState extends State<AmigosPage> {
               return CircularProgressIndicator();
             } else if (snapshot.hasError) {
               return Text('${snapshot.error}');
-            } else if (snapshot.hasData) {
+            } else if (snapshot.hasData && snapshot.data != null) {
               if (snapshot.data!.isEmpty) {
                 return Text('No se encontraron amigos');
               }
@@ -86,8 +90,14 @@ class _AmigosPageState extends State<AmigosPage> {
                 itemBuilder: (context, index) {
                   Map<String, dynamic> friend = snapshot.data![index];
                   return ListTile(
-                    title: Text(friend['nombre']),
+                    title: Text(friend['usuario']),
                     subtitle: Text(friend['email']),
+                    trailing: IconButton(
+                      icon: Icon(Icons.collections),
+                      onPressed: () {
+                        _showFriendCollection(friend['email']);
+                      },
+                    ),
                   );
                 },
               );
