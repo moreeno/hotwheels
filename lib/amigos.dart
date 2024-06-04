@@ -93,7 +93,7 @@ class _AmigosPageState extends State<AmigosPage> {
                     title: Text(friend['usuario']),
                     subtitle: Text(friend['email']),
                     trailing: IconButton(
-                      icon: Icon(Icons.collections),
+                      icon: Icon(Icons.receipt),
                       onPressed: () {
                         _showFriendCollection(friend['email']);
                       },

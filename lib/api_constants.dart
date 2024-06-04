@@ -1,9 +1,10 @@
 class APIConstants {
-  static const String apiBaseUrl = 'http://192.168.246.224:8000';
+  static const String apiBaseUrl = 'http://192.168.1.9:8000';
 
   //GETS
   static const String dbConnectionEndpoint = '/test-db-connection';
   static const String getUserCodeEndpoint = '/get-user-code/';
+  static const String getUserNameEndpoint = '/get-user-name/';
   static const String getAllHw = '/get-all-hotwheels';
   static const String getUserNumber = '/request-number/';
 

@@ -21,11 +21,14 @@ class _CollectionFriendPageState extends State<CollectionFriendPage> {
   List<dynamic> collectionList = [];
   Map<int, int> countMap = {};
   int _selectedIndex = 1;
+  String friendName = '';
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
     fetchCollection();
+    fetchName();
   }
 
   Future<void> fetchCollection() async {
@@ -39,12 +42,37 @@ class _CollectionFriendPageState extends State<CollectionFriendPage> {
           // Elimina los duplicados y conserva el recuento
           collectionList = _removeDuplicates(data);
           countMap = _calculateCountMap(data);
+          isLoading = false;
         });
       } else {
         throw Exception('Error: No se pudo conectar al servidor');
       }
     } catch (e) {
       print("Error fetching friend collection: $e");
+    }
+  }
+
+  Future<void> fetchName() async {
+    try {
+      final response = await http.get(
+        Uri.parse('${APIConstants.apiBaseUrl}${APIConstants.getUserNameEndpoint}${widget.friendEmail}'),
+      );
+      if (response.statusCode == 200) {
+        var json = jsonDecode(response.body);
+        if (json['success']) {
+          setState(() {
+            friendName = json['usuario  '].toString();
+          });
+        } else {
+          setState(() {
+            friendName = 'Usuario no encontrado';
+          });
+        }
+      } else {
+        throw Exception('Failed to load user name');
+      }
+    } catch (e) {
+      print("Error fetching friend name: $e");
     }
   }
 
@@ -72,32 +100,34 @@ class _CollectionFriendPageState extends State<CollectionFriendPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Colección de ${widget.friendEmail}'),
+        title: Text('Colección de ${friendName.isEmpty ? widget.friendEmail : friendName}'),
       ),
-      body: collectionList.isEmpty
-          ? Center(
-              child: Text('No hay coches en la colección de ${widget.friendEmail}'),
-            )
-          : ListView.builder(
-              itemCount: collectionList.length,
-              itemBuilder: (context, index) {
-                var hotwheel = collectionList[index];
-                int id = hotwheel['id'];
-                int count = countMap[id] ?? 0;
-                return ListTile(
-                  title: Row(
-                    children: [
-                      Expanded(
-                        child: Text(hotwheel['nombre']),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : collectionList.isEmpty
+              ? Center(
+                  child: Text('No hay coches en la colección de ${friendName.isEmpty ? widget.friendEmail : friendName}'),
+                )
+              : ListView.builder(
+                  itemCount: collectionList.length,
+                  itemBuilder: (context, index) {
+                    var hotwheel = collectionList[index];
+                    int id = hotwheel['id'];
+                    int count = countMap[id] ?? 0;
+                    return ListTile(
+                      title: Row(
+                        children: [
+                          Expanded(
+                            child: Text(hotwheel['nombre']),
+                          ),
+                          if (count > 1) Text('$count')
+                        ],
                       ),
-                      if (count > 1) Text('$count')
-                    ],
-                  ),
-                  subtitle: Text('Año: ${hotwheel['anio']}'),
-                  leading: Image.network(hotwheel['image']),
-                );
-              },
-            ),
+                      subtitle: Text('Año: ${hotwheel['anio']}'),
+                      leading: Image.network(hotwheel['image']),
+                    );
+                  },
+                ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(

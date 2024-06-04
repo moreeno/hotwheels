@@ -3,18 +3,18 @@ import 'package:flutter/material.dart';
 final ThemeData redBlackTheme = ThemeData(
   primarySwatch: Colors.red,
   brightness: Brightness.light,
-  scaffoldBackgroundColor: Color.fromARGB(255, 211, 211, 211), // Gris pastel
+  scaffoldBackgroundColor: Color.fromARGB(255, 48, 48, 48),  // Fondo
   colorScheme: ColorScheme.light(
-    primary: Colors.red, // Rojo
-    secondary: Colors.black, // Negro
-    surface: Colors.red[400]!, // Rojo claro
-    background: Colors.red[50]!, // Rojo claro
-    error: Colors.red,
-    onPrimary: Colors.red[400]!, // Detalles en negro
-    onSecondary: Colors.red, // Detalles en rojo
-    onSurface: Colors.black,
-    onBackground: Colors.black,
-    onError: Colors.white,
+    primary: Colors.red[400]!,                              // Iconos y algunos text fields
+    secondary: Color.fromARGB(255, 52, 56, 63),             // Negro
+    surface: Color.fromARGB(255, 48, 48, 48),               // App Bar otras pestañas
+    background: Color.fromARGB(255, 48, 48, 48),            //BottomNavigationBar
+    error: Colors.red,                                      // Error
+    onPrimary: Color.fromARGB(255, 37, 37, 37),             // App Bar MAIN
+    onSecondary: Colors.red,                                // No Se
+    onSurface: Colors.red[50]!,                            // Texto
+    onBackground: const Color.fromARGB(255, 0, 0, 0),       // Detalles  (borde TextField)
+    onError: Colors.white,                                  // Errores
   ),
-  dialogBackgroundColor: Colors.red[100]!, // Rojo claro
+  dialogBackgroundColor: Colors.red[300]!,                  // Rojo claro
 );

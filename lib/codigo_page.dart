@@ -110,85 +110,103 @@ class _CodigoPageState extends State<CodigoPage> {
       appBar: AppBar(
         title: Text('Tu Código'),
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          ListTile(
-            leading: Icon(Icons.vpn_key, color: Theme.of(context).primaryColor),
-            title: Text('1. Conseguir el código de tu amigo'),
-            subtitle: Text('Pide a tu amigo su código de referencia.'),
-          ),
-          ListTile(
-            leading:
-                Icon(Icons.keyboard, color: Theme.of(context).primaryColor),
-            title: Text('2. Añadir el código de tu amigo abajo'),
-            subtitle: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _codigoController,
-                    decoration: InputDecoration(
-                      hintText: 'Ingresa el código aquí',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 20),
-                GestureDetector(
-                  onTap: _confirmSend,
-                  child: AnimatedContainer(
-                    duration: Duration(milliseconds: 200),
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(100),
-                      color: Color.fromRGBO(110, 105, 105, 1),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Color.fromRGBO(0, 0, 0, 0.498),
-                          blurRadius: 10,
-                          spreadRadius: 1,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.send,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          ListTile(
-            leading: Icon(Icons.hourglass_empty,
-                color: Theme.of(context).primaryColor),
-            title: Text('3. Esperar a que tu amigo te acepte'),
-          ),
-          SizedBox(height: 20),
-          _isLoading
-              ? CircularProgressIndicator()
-              : Text('Tu código es: $_codigo',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+      body: Padding(
+        padding: const EdgeInsets.only(top: 50.0), // Añade espacio superior
+        child: Center( // Centrar horizontalmente
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              IconButton(
-                onPressed: _copyToClipboard,
-                icon: Icon(Icons.content_copy),
+              Container(
+                width: MediaQuery.of(context).size.width * 0.8,
+                child: ListTile(
+                  leading: Icon(Icons.vpn_key, color: Theme.of(context).primaryColor),
+                  title: Text('1. Conseguir el código de tu amigo'),
+                  subtitle: Text('Pide a tu amigo su código de referencia.'),
+                ),
               ),
-              IconButton(
-                onPressed: () {
-                  Share.share(
-                      '¡Hola! Éste es mi código de invitación para My HotWheels : $_codigo \nAñádelo en el apartado de "Código" y te agregaré \n\nDescárgate la aplicación para Android: https://play.google.com/ \n\nO para IOS: www.apple.com');
-                },
-                icon: Icon(Icons.share),
+              Container(
+                width: MediaQuery.of(context).size.width * 0.8,
+                child: ListTile(
+                  leading: Icon(Icons.keyboard, color: Theme.of(context).primaryColor),
+                  title: Text('2. Añadir el código de tu amigo abajo'),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _codigoController,
+                              decoration: InputDecoration(
+                                hintText: 'Ingresa el código aquí',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 20),
+                          GestureDetector(
+                            onTap: _confirmSend,
+                            child: AnimatedContainer(
+                              duration: Duration(milliseconds: 200),
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(100),
+                                color: Colors.red[400]!,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Color.fromRGBO(0, 0, 0, 0.498),
+                                    blurRadius: 10,
+                                    spreadRadius: 1,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                Icons.send,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              Container(
+                width: MediaQuery.of(context).size.width * 0.8, // Ajusta el ancho según tus necesidades
+                child: ListTile(
+                  leading: Icon(Icons.hourglass_empty, color: Theme.of(context).primaryColor),
+                  title: Text('3. Esperar a que tu amigo te acepte'),
+                ),
+              ),
+              SizedBox(height: 100),
+              _isLoading
+                  ? CircularProgressIndicator()
+                  : Text('Tu código es: $_codigo',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    onPressed: _copyToClipboard,
+                    icon: Icon(Icons.content_copy),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      Share.share(
+                          '¡Hola! Éste es mi código de invitación para My HotWheels : $_codigo \nAñádelo en el apartado de "Código" y te agregaré \n\nDescárgate la aplicación para Android: https://play.google.com/ \n\nO para IOS: www.apple.com');
+                    },
+                    icon: Icon(Icons.share),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
