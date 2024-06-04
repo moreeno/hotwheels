@@ -200,12 +200,21 @@ class HotWheelsService {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String email = prefs.getString('email') ?? '';
+      print(hotwheelId);
+      print(email);
+
       final response = await http.post(
         Uri.parse(
             '${APIConstants.apiBaseUrl}${APIConstants.removeHwFromWishlist}'),
-        body: {'email': email, 'hotwheel_id': hotwheelId.toString()},
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {
+          'email': email,
+          'hotwheel_id': hotwheelId.toString(),
+        },
       );
+
       if (response.statusCode != 200) {
+        print('Error: ${response.body}');
         throw Exception('Failed to remove from wishlist');
       }
     } catch (e) {

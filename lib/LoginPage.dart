@@ -102,10 +102,9 @@ class _LoginPageState extends State<LoginPage> {
                 onPressed: _login,
                 child: Text('Iniciar sesión'),
               ),
-              SizedBox(height: 10), // Añade espacio entre los botones
-              TextButton(
-                onPressed:
-                    _goToRegisterPage, // Llama a la función para ir a la página de registro
+              SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: _goToRegisterPage,
                 child: Text('Registrarse'),
               ),
             ],

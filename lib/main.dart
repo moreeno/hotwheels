@@ -19,6 +19,7 @@ import 'auth_service.dart';
 import 'collection.dart';
 import 'wishlist.dart';
 import 'codigo_page.dart';
+import 'colores_theme.dart';
 
 void main() async {
   // Asegura que la inicialización de WidgetsFlutterBinding esté completa.
@@ -51,10 +52,7 @@ class MyApp extends StatelessWidget {
       splitScreenMode: true,
       builder: (context, child) => MaterialApp(
         title: 'HotWheels App',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
-        ),
+        theme: redBlackTheme,
         debugShowCheckedModeBanner: false,
         home: isLoggedIn ? MyHomePage() : LoginPage(),
         routes: {
@@ -119,11 +117,18 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> fetchWishlist() async {
     try {
-      var data = await HotWheelsService.getWishlist();
-      setState(() {
-        wishlist =
-            data; // Actualiza la lista de deseos cuando se obtiene del servidor
-      });
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String email = prefs.getString('email') ?? 'No Email Found';
+      final response = await http
+          .get(Uri.parse('${APIConstants.apiBaseUrl}/wishlist?email=$email'));
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        setState(() {
+          wishlist = data;
+        });
+      } else {
+        print("Error fetching wishlist: ${response.statusCode}");
+      }
     } catch (e) {
       print("Error fetching wishlist: $e");
     }
@@ -211,20 +216,6 @@ class _MyHomePageState extends State<MyHomePage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        _showLoadingDialog(context);
-                        // Llamar al servicio para añadir a la wishlist
-                        await HotWheelsService.addToWishlist(hotwheel['id']);
-                        fetchWishlist();
-                        Navigator.of(context).pop(); // Cierra el loading dialog
-                        Navigator.of(context).pop(); // Cierra el AlertDialog
-                      },
-                      child: Text('Añadir a Wishlist'),
-                    ),
-                  ),
-                  SizedBox(width: 10),
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () async {
@@ -365,14 +356,14 @@ class _MyHomePageState extends State<MyHomePage> {
             },
           ),
           IconButton(
-                icon: Icon(Icons.share),
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => CodigoPage()),
-                  );
-                },
-              ),
+            icon: Icon(Icons.share),
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => CodigoPage()),
+              );
+            },
+          ),
         ],
       ),
       body: Padding(
@@ -413,16 +404,12 @@ class _MyHomePageState extends State<MyHomePage> {
                             // Eliminar de la wishlist si ya está en la wishlist
                             await HotWheelsService.removeFromWishlist(
                                 hotwheel['id']);
-                            //fetchWishlist(); // Actualizar la lista de deseos después de eliminar
                           } else {
                             // Agregar a la wishlist si no está en la wishlist
                             await HotWheelsService.addToWishlist(
                                 hotwheel['id']);
-                            //fetchWishlist(); // Actualizar la lista de deseos después de agregar
                           }
-                          setState(() {
-                            fetchWishlist(); // Actualizar la lista de deseos después de cambiar
-                          });
+                          await fetchWishlist(); // Actualizar la lista de deseos después de cambiar
                         },
                       ),
                       onTap: () => _showHotWheelDetails(context, hotwheel),
