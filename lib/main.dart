@@ -77,13 +77,14 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  TextEditingController _establecimientoController = TextEditingController();
+  TextEditingController _searchController = TextEditingController();
   TextEditingController _idController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String username = "";
   int _selectedIndex = 0;
   List<dynamic> hotwheelsList = [];
   List<dynamic> wishlist = [];
+  List<dynamic> filteredHotwheelsList = [];
 
   @override
   void initState() {
@@ -92,6 +93,11 @@ class _MyHomePageState extends State<MyHomePage> {
     fetchHotWheels();
     fetchWishlist();
     getAmigosNumber();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  void _onSearchChanged() {
+    _filterHotWheels(_searchController.text);
   }
 
   // Se carga el nombre de usuario desde SharedPreferences y lo asigna al controlador _idController
@@ -100,7 +106,7 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       username = prefs.getString('username') ?? "Invitado";
       // Asigna el nombre de usuario al controlador de ID
-      _idController.text = username;
+      //_idController.text = username;
     });
   }
 
@@ -109,6 +115,7 @@ class _MyHomePageState extends State<MyHomePage> {
       var data = await HotWheelsService.getHotWheels();
       setState(() {
         hotwheelsList = data;
+        filteredHotwheelsList = data;
       });
     } catch (e) {
       print("Error fetching hotwheels: $e");
@@ -134,11 +141,35 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  Future<void> _filterHotWheels(String query) async {
+    if (query.isEmpty) {
+      setState(() {
+        filteredHotwheelsList = hotwheelsList;
+      });
+      return;
+    }
+
+    try {
+      final response = await http.get(Uri.parse(
+          '${APIConstants.apiBaseUrl}/search-hotwheels?query=$query'));
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        setState(() {
+          filteredHotwheelsList = data;
+        });
+      } else {
+        print("Error fetching search results: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error fetching search results: $e");
+    }
+  }
+
   @override
   void dispose() {
     // Limpiar el controlador cuando el widget se elimine del árbol de widgets
-    _establecimientoController.dispose();
-    _idController.dispose();
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -348,7 +379,6 @@ class _MyHomePageState extends State<MyHomePage> {
           IconButton(
             icon: Icon(Icons.supervised_user_circle),
             onPressed: () {
-              // Agrega aquí la acción que deseas realizar al presionar el icono supervised_user_circle
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => AmigosPage()),
@@ -369,26 +399,23 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Padding(
         padding: EdgeInsets.all(screenWidth * 0.05),
         child: Form(
-          key:
-              _formKey, // Asegúrate de que el Form está envolviendo los TextFormField
+          key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              Text(
-                'Bienvenido $username', // Muestra el nombre del usuario
-                style: TextStyle(
-                  fontSize: 30.sp,
-                  fontWeight: FontWeight.bold,
+              TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  labelText: 'Buscar HotWheels',
+                  prefixIcon: Icon(Icons.search),
                 ),
-                textAlign: TextAlign.center,
               ),
-              SizedBox(height: screenHeight * 0.05),
+              SizedBox(height: screenHeight * 0.02),
               Expanded(
                 child: ListView.builder(
-                  itemCount: hotwheelsList.length,
+                  itemCount: filteredHotwheelsList.length,
                   itemBuilder: (context, index) {
-                    var hotwheel = hotwheelsList[index];
-                    // Comprueba si el id del coche está en la wishlist
+                    var hotwheel = filteredHotwheelsList[index];
                     bool isInWishlist = wishlist
                         .any((element) => element['id'] == hotwheel['id']);
                     return ListTile(
@@ -401,15 +428,13 @@ class _MyHomePageState extends State<MyHomePage> {
                             : Icon(Icons.favorite_border),
                         onPressed: () async {
                           if (isInWishlist) {
-                            // Eliminar de la wishlist si ya está en la wishlist
                             await HotWheelsService.removeFromWishlist(
                                 hotwheel['id']);
                           } else {
-                            // Agregar a la wishlist si no está en la wishlist
                             await HotWheelsService.addToWishlist(
                                 hotwheel['id']);
                           }
-                          await fetchWishlist(); // Actualizar la lista de deseos después de cambiar
+                          await fetchWishlist();
                         },
                       ),
                       onTap: () => _showHotWheelDetails(context, hotwheel),

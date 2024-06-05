@@ -11,7 +11,8 @@ import 'main.dart';
 class CollectionFriendPage extends StatefulWidget {
   final String friendEmail;
 
-  const CollectionFriendPage({Key? key, required this.friendEmail}) : super(key: key);
+  const CollectionFriendPage({Key? key, required this.friendEmail})
+      : super(key: key);
 
   @override
   _CollectionFriendPageState createState() => _CollectionFriendPageState();
@@ -34,7 +35,8 @@ class _CollectionFriendPageState extends State<CollectionFriendPage> {
   Future<void> fetchCollection() async {
     try {
       final response = await http.get(
-        Uri.parse('${APIConstants.apiBaseUrl}${APIConstants.getCollection}${widget.friendEmail}'),
+        Uri.parse(
+            '${APIConstants.apiBaseUrl}${APIConstants.getCollection}${widget.friendEmail}'),
       );
       if (response.statusCode == 200) {
         final data = json.decode(utf8.decode(response.bodyBytes));
@@ -55,13 +57,14 @@ class _CollectionFriendPageState extends State<CollectionFriendPage> {
   Future<void> fetchName() async {
     try {
       final response = await http.get(
-        Uri.parse('${APIConstants.apiBaseUrl}${APIConstants.getUserNameEndpoint}${widget.friendEmail}'),
+        Uri.parse(
+            '${APIConstants.apiBaseUrl}${APIConstants.getUserNameEndpoint}${widget.friendEmail}'),
       );
       if (response.statusCode == 200) {
         var json = jsonDecode(response.body);
         if (json['success']) {
           setState(() {
-            friendName = json['usuario  '].toString();
+            friendName = json['usuario'].toString();
           });
         } else {
           setState(() {
@@ -100,13 +103,15 @@ class _CollectionFriendPageState extends State<CollectionFriendPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Colección de ${friendName.isEmpty ? widget.friendEmail : friendName}'),
+        title: Text(
+            'Colección de ${friendName.isEmpty ? widget.friendEmail : friendName}'),
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : collectionList.isEmpty
               ? Center(
-                  child: Text('No hay coches en la colección de ${friendName.isEmpty ? widget.friendEmail : friendName}'),
+                  child: Text(
+                      'No hay coches en la colección de ${friendName.isEmpty ? widget.friendEmail : friendName}'),
                 )
               : ListView.builder(
                   itemCount: collectionList.length,
